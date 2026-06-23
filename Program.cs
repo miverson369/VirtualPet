@@ -1,6 +1,8 @@
 ﻿using System;
 using System.IO;
 using System.Text.Json;
+using System.Threading.Tasks;
+using VirtualPet;
 
 
 namespace VirtualPetApp
@@ -9,7 +11,7 @@ namespace VirtualPetApp
     {
         private const string DefaultSaveFile = "pet_save.json";
 
-        public static void Main()
+        public static async Task Main()
         {
             string saveFile = DefaultSaveFile;
 
@@ -34,6 +36,9 @@ namespace VirtualPetApp
                 Console.WriteLine($"Happiness: {pet.Happiness}");
                 Console.WriteLine($"Mood: {pet.CheckMood()}"); // if you prefer the string-returning helper
                 if (!string.IsNullOrEmpty(pet.Image))
+
+                    Console.WriteLine("4. Create Party Room");
+                    Console.WriteLine("5. Join Party Room");
                 {
                     Console.WriteLine("Image:");
                     Console.WriteLine(pet.Image);
@@ -52,13 +57,32 @@ namespace VirtualPetApp
                         case "1":
                             pet.Feed();
                             break;
+
                         case "2":
                             pet.Play();
                             break;
+
                         case "3":
                             pet.Save(saveFile);
                             Console.WriteLine("Game saved. Goodbye!");
                             return;
+
+                        case "4":
+                            PetPartyApi api = new PetPartyApi();
+                            string roomCode = await api.CreateRoomAsync(pet);
+                            Console.WriteLine($"Room created! Code: {roomCode}");
+                            break;
+
+                        case "5":
+                            Console.Write("Enter room code: ");
+                            string code = Console.ReadLine();
+
+                            PetPartyApi joinApi = new PetPartyApi();
+                            VisitorPet visitor = await joinApi.JoinRoomAsync(code);
+
+                            Console.WriteLine($"Visitor joined: {visitor.Name}");
+                            Console.WriteLine($"Visitor image: {visitor.Image}");
+                            break;
 
                         default:
                             Console.WriteLine("Invalid choice. Please try again.");

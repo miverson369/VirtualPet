@@ -17,7 +17,7 @@ namespace VirtualPetApp
         public int Age { get; set; }
         public PetMood Mood { get; set; }
         public PetStage Stage { get; set; }
-        public string Image { get; set; }
+        public string Image { get; set; } = "(^_^) happy pet";
         public Pet()
         { }
 
