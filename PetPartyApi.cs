@@ -32,33 +32,45 @@ namespace VirtualPet
 
             response.EnsureSuccessStatusCode();
 
-            string roomCode = await response.Content.ReadAsStringAsync();
-            return roomCode.Trim('"');
+            string result = await response.Content.ReadAsStringAsync();
+            
+            if (!response.IsSuccessStatusCode)
+
+            {
+                throw new Exception(result);
+            }
+            return result.Trim('"');
         }
-              
+
         public async Task<VisitorPet> JoinRoomAsync(string roomId)
         {
-            var data = new { };
-
             HttpResponseMessage response =
-                await client.PostAsJsonAsync("/api/room/join/" + roomId + ApiKey, data);
-
-            response.EnsureSuccessStatusCode();
+                await client.PostAsync($"/api/room/join/{roomId}{ApiKey}", null);
 
             string json = await response.Content.ReadAsStringAsync();
 
-#pragma warning disable CS8600 // Converting null literal or possible null value to non-nullable type.
+            if (!response.IsSuccessStatusCode)
+            {
+                throw new Exception(json);
+            }
+
             RoomResponse room = JsonSerializer.Deserialize<RoomResponse>(
                 json,
                 new JsonSerializerOptions { PropertyNameCaseInsensitive = true }
             );
-#pragma warning restore CS8600 // Converting null literal or possible null value to non-nullable type.
+
+            if (room == null || room.Visitor == null)
+            {
+                throw new Exception("The API did not return a visitor pet.");
+            }
 
             return room.Visitor;
         }
+        
     }
+}
 
-    public class RoomResponse
+public class RoomResponse
     {
         public VisitorPet Visitor { get; set; }
     }
@@ -68,6 +80,7 @@ namespace VirtualPet
         public string Name { get; set; }
         public string Image { get; set; }
     }
-}
+
+
 
 

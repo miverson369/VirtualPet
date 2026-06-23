@@ -37,8 +37,6 @@ namespace VirtualPetApp
                 Console.WriteLine($"Mood: {pet.CheckMood()}"); // if you prefer the string-returning helper
                 if (!string.IsNullOrEmpty(pet.Image))
 
-                    Console.WriteLine("4. Create Party Room");
-                    Console.WriteLine("5. Join Party Room");
                 {
                     Console.WriteLine("Image:");
                     Console.WriteLine(pet.Image);
@@ -48,6 +46,8 @@ namespace VirtualPetApp
                 Console.WriteLine("1. Feed");
                 Console.WriteLine("2. Play");
                 Console.WriteLine("3. Save & Exit");
+                Console.WriteLine("4. Create Party Room");
+                Console.WriteLine("5. Join Party Room");
                 Console.Write("Choose an option: ");
 
                 string choice = Console.ReadLine();
@@ -68,24 +68,62 @@ namespace VirtualPetApp
                             return;
 
                         case "4":
-                            PetPartyApi api = new PetPartyApi();
-                            string roomCode = await api.CreateRoomAsync(pet);
-                            Console.WriteLine($"Room created! Code: {roomCode}");
+                            Console.WriteLine("Option 4 selected.");
+
+                            try
+                            {
+                                Console.WriteLine("Creating room...");
+
+                                PetPartyApi api = new PetPartyApi();
+                                string roomCode = await api.CreateRoomAsync(pet);
+
+                                Console.WriteLine($"Room created! Code: {roomCode}");
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Could not create room.");
+                                Console.WriteLine(ex.Message);
+                            }
+
+                            Console.WriteLine("Press Enter to return to the main menu");
+                            Console.ReadLine();
                             break;
 
                         case "5":
-                            Console.Write("Enter room code: ");
-                            string code = Console.ReadLine();
+                            try
+                            {
+                                Console.Write("Enter room code: ");
+                                string code = Console.ReadLine();
 
-                            PetPartyApi joinApi = new PetPartyApi();
-                            VisitorPet visitor = await joinApi.JoinRoomAsync(code);
+                                if (string.IsNullOrWhiteSpace(code) || code.Length != 6)
+                                {
+                                    Console.WriteLine("Room code must be 6 characters.");
+                                    break;
+                                }
 
-                            Console.WriteLine($"Visitor joined: {visitor.Name}");
-                            Console.WriteLine($"Visitor image: {visitor.Image}");
-                            break;
+                                Console.WriteLine("Joining room...");
 
-                        default:
-                            Console.WriteLine("Invalid choice. Please try again.");
+                                PetPartyApi api = new PetPartyApi();
+                                VisitorPet visitor = await api.JoinRoomAsync(code);
+
+                                if (visitor == null)
+                                {
+                                    Console.WriteLine("No visitor pet was returned.");
+                                }
+                                else
+                                {
+                                    Console.WriteLine($"Visitor joined: {visitor.Name}");
+                                    Console.WriteLine($"Visitor image: {visitor.Image}");
+                                }
+                            }
+                            catch (Exception ex)
+                            {
+                                Console.WriteLine("Could not join room.");
+                                Console.WriteLine(ex.Message);
+                            }
+
+                            Console.WriteLine("Press Enter to return to the menu...");
+                            Console.ReadLine();
                             break;
                     }
                     pet.Age++;
